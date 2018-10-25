@@ -1,0 +1,352 @@
+﻿<UserControl x:Class="Asana.View.ProjectPageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:Asana.View"
+             xmlns:model="clr-namespace:Asana.Model"
+             mc:Ignorable="d" 
+             xmlns:command="http://www.galasoft.ch/mvvmlight"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             d:DesignHeight="450" d:DesignWidth="800" x:Name="Parent">
+    <UserControl.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#c850c0" Offset="0"></GradientStop>
+            <GradientStop Color="#4158d0" Offset="0.9"></GradientStop>
+            <LinearGradientBrush.Transform>
+                <RotateTransform CenterX="60" CenterY="30" Angle="-135" />
+            </LinearGradientBrush.Transform>
+        </LinearGradientBrush>
+    </UserControl.Background>
+    <UserControl.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Name="Bd"
+                                             Background="{TemplateBinding Background}" 
+                                             SnapsToDevicePixels="true">
+                            <ScrollViewer Name="PART_ContentHost" Background="{TemplateBinding Background}" 
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="PART_ContentHost" Property="Background" Value="#F5F5F5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  template for creating task   -->
+        <DataTemplate x:Key="AddTaskTemplate">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+
+                </Grid.RowDefinitions>
+                <TextBox Grid.Row="1" Grid.Column="0" Margin="0 0 0 15"   Width="200" Padding="2" Background="#F5F5F5"   FontSize="16" TextWrapping="Wrap" Name="TaskTitleTxtBox" Text="{Binding Title}"/>
+                <TextBlock Grid.Row="1" Grid.Column="0"  Margin="0 0 0 10"  Padding="2" Background="#F5F5F5"  VerticalAlignment="Center"   FontSize="16" Text="Task title" IsHitTestVisible="False"  Foreground="DarkGray">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=TaskTitleTxtBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>             
+                <Button Grid.Row="4" Margin="0 0 0 10" Width="200" HorizontalAlignment="Center"  VerticalAlignment="Top" Content="Register a new employee" Command="{Binding DataContext.AssignToNewUserCommand, ElementName=Parent}" CommandParameter="{Binding .}"/>
+                <Grid Grid.Row="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Width="55" Height="25" VerticalAlignment="Center" Margin="5 0 5 0" Command="{Binding DataContext.AddTaskCommand, ElementName=Parent}" CommandParameter="{Binding .}" FontSize="11" Content="ADD" Foreground="White"/>
+                    <Button Grid.Column="1" Width="100" VerticalAlignment="Center" Margin="10 0 10 0" Height="25" FontSize="11" Content="DISCARD" Command="{Binding DataContext.DiscardTaskCommand, ElementName=Parent}" CommandParameter="{Binding .}" Background="White"  Foreground="Purple" />
+                </Grid>
+            </Grid>
+        </DataTemplate>
+
+
+        <DataTemplate x:Key="CreateColumnTemplate">
+            <Border Padding="5" Background="WhiteSmoke">
+                <Grid >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.5*"/>
+                        <RowDefinition Height="0.4*"/>
+                        <RowDefinition Height="0.5*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Row="0" Grid.Column="0" Margin="0 0 2 0" Width="150" Padding="2" Background="#F5F5F5"  FontSize="16" TextWrapping="Wrap" Name="ColumnTitleTxtBox" Text="{Binding Title}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Margin="2 0 0 0"  HorizontalAlignment="Left" Padding="2"  VerticalAlignment="Center"  FontSize="16"  Width="150" Text="Column title" IsHitTestVisible="False"  Foreground="DarkGray">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=ColumnTitleTxtBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Button Grid.Row="0" Grid.Column="1" Content="{materialDesign:PackIcon Kind=Plus}" Command="{Binding DataContext.AddColumnCommand, ElementName=Parent}" Padding="0.2" CommandParameter="{Binding .}" HorizontalAlignment="Right" Margin="0 0 3 0" Width="30" Height="30" />
+                    <Button Grid.Row="0" Grid.Column="2" Content="{materialDesign:PackIcon Kind=Delete}" Command="{Binding DataContext.DeleteColumnCommand, ElementName=Parent}" Padding="0.2"  CommandParameter="{Binding .}" HorizontalAlignment="Left"  Margin="3 0 0 0" Width="30" Height="30" />
+                    <TextBlock Grid.ColumnSpan="3
+                               " Grid.Row="1" Width="250" Text="____________________________________________________________________________________________________________________________"/>
+                    <Label Grid.Column="0"  Margin="0 2 0 2" Grid.Row="2" VerticalAlignment="Bottom" Width="150" FontWeight="Bold" Foreground="DodgerBlue" Content="Example">
+                        <Label.InputBindings>
+                            <MouseBinding Command="{Binding DataContext.ShowExampleCommand, ElementName=Parent}" CommandParameter="{Binding .}" MouseAction="LeftClick" />
+                        </Label.InputBindings>
+                    </Label>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!--   Data template for task  -->
+        <DataTemplate x:Key="AddedTaskTemplate">
+            <Border HorizontalAlignment="Stretch">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.1*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding Title}" FontWeight="Bold" Width="150" TextWrapping="Wrap"/>
+                    <TextBlock Grid.ColumnSpan="2" Grid.Row="2" VerticalAlignment="Top" Width="200" Text="____________________________________________________________________________________________" Foreground="Black"/>
+                    <TextBlock Grid.Column="0" Grid.Row="3" Text="{Binding Source={x:Static model:CurrentProject.Instance},Path=Project.Name}" />
+                    <Menu  Grid.Column="1" Grid.Row="0" Margin="10 0 0 0" Background="Transparent" HorizontalAlignment="Right">
+                        <MenuItem Padding="0" Width="20" Background="Transparent"  HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch"   Height="20">
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="DotsVertical" Foreground="Gray" Background="Transparent"/>
+                            </MenuItem.Icon>
+                            <MenuItem Header="{materialDesign:PackIcon Kind=Pen}" Background="#EDEDED" Command="{Binding ElementName=Parent,Path=DataContext.EditTaskCommand}" CommandParameter="{Binding .}" ToolTip="Edit task" ToolTipService.Placement="MousePoint">
+                            </MenuItem>
+                            <MenuItem Header="{materialDesign:PackIcon Kind=Delete}" Background="#EDEDED" Command="{Binding ElementName=Parent, Path=DataContext.DiscardTaskCommand}" CommandParameter="{Binding .}" ToolTip="Delete task" ToolTipService.Placement="MousePoint"/>
+                            <MenuItem Header="{materialDesign:PackIcon Kind=Login}" Background="#EDEDED" Command="{Binding ElementName=Parent, Path=DataContext.SelectTaskCommand}" CommandParameter="{Binding .}" ToolTip="Select task" ToolTipService.Placement="MousePoint"/>
+
+                        </MenuItem>
+                    </Menu>
+
+                    <Grid Grid.ColumnSpan="2" Grid.Row="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0*"/>
+                            <ColumnDefinition Width="0.5*"/>
+                            <ColumnDefinition Width="4*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="1" Foreground="DarkGray" VerticalAlignment="Center" Command="{Binding Path= DataContext.StarTaskCommand, ElementName=Parent}" CommandParameter="{Binding .}" Margin="-5 3 0 0" HorizontalAlignment="Left" Background="Transparent" BorderBrush="Transparent"  Padding="0.5" Width="18" Height="18">
+                            <Button.Content>
+                                <Image  Source="{Binding StarPath}"  IsHitTestVisible="False"/>
+                            </Button.Content>
+                        </Button>                      
+                        <Button Grid.Column="2" Foreground="DarkGray" VerticalAlignment="Center" Command="{Binding Path= DataContext.TaskLogCommand, ElementName=Parent}" CommandParameter="{Binding .}" Margin="-8 5 0 0" HorizontalAlignment="Left" Background="Transparent" BorderBrush="Transparent"  Padding="0.5" Width="18" Height="18" Content="{materialDesign:PackIcon Kind=History}"/>
+
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+
+        <!--  Data template for creating task     -->
+        <DataTemplate x:Key="CreateTaskTemplate">
+            <Border Padding="5" Background="WhiteSmoke">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Row="0" Grid.Column="0" IsEnabled="False" VerticalAlignment="Center" Padding="0.2" Margin="0 0 2 0" Width="150" TextWrapping="Wrap" FontSize="16"  Name="TitleTxtBox" Text="{Binding Title}"/>
+                    <Grid Grid.Row="0" Grid.Column="1" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Command="{Binding DataContext.CreateTaskCommand, ElementName=Parent}" CommandParameter="{Binding .}" Content="{materialDesign:PackIcon Kind=Plus}"  Margin="0 0 2 0" Padding="0.2" Width="30" Height="30" />
+                        <Menu  Grid.Column="1" >
+                            <MenuItem Padding="6 0 0 0" Background="#673BB7"  HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch"  Width="30" Height="30">
+                                <MenuItem.Icon >
+                                    <materialDesign:PackIcon Kind="Settings" Foreground="White"  />
+                                </MenuItem.Icon>
+                                <MenuItem Header="{materialDesign:PackIcon Kind=Delete}" Command="{Binding ElementName=Parent, Path=DataContext.DeleteColumnCommand}" CommandParameter="{Binding .}"/>
+
+                                <MenuItem Header="{materialDesign:PackIcon Kind=BorderColor}" Command="{Binding ElementName=Parent, Path=DataContext.EditColumnCommand}" CommandParameter="{Binding .}" />
+                            </MenuItem>
+                        </Menu>
+                    </Grid>
+
+
+                    <ListBox Name="TasksList"  SelectedItem="{Binding Source={x:Static model:CurrentTask.Instance},Path=Task}"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" MinHeight="10" ItemsSource="{Binding Column.Tasks}" dd:DragDrop.IsDropTarget="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.DragHandler="{Binding}" dd:DragDrop.DropHandler="{Binding}" AllowDrop="True">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <ContentControl Content="{Binding .}" >
+                                    <ContentControl.Style>
+                                        <Style TargetType="ContentControl">
+                                            <Setter Property="ContentTemplate" 
+                                                            Value="{StaticResource AddTaskTemplate}" />
+                                            <Style.Triggers>
+
+                                                <DataTrigger Binding="{Binding Path=IsTaskAdded}" Value="True">
+                                                    <Setter Property="ContentTemplate"
+                                                                Value="{StaticResource AddedTaskTemplate}" />
+
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ContentControl.Style>
+                                </ContentControl>
+                              
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                      
+
+                    </ListBox>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+
+        <DropShadowEffect x:Key="MyEffect" ShadowDepth="0.4" Color="Black" Opacity="0.4" BlurRadius="10" />
+
+
+
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition  Width="0.02*"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="0.02*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.07*"/>
+            <RowDefinition/>
+            <RowDefinition  Height="0.07*"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Column="1" Grid.Row="1"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Background="White" BorderBrush="White"  CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="45"/>
+                    <RowDefinition Height="80"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <!--     HEADER    -->
+                <Grid Grid.Row="0">
+                    <ContentControl Content="{Binding Header}"/>
+                </Grid>
+
+                <!--    Projects, tasks-->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Source={x:Static model:CurrentProject.Instance},Path=Project.Name}" FontSize="25" VerticalAlignment="Top" Margin="10 3 0 0" HorizontalAlignment="Left" Foreground="Gray" FontWeight="Bold"/>
+                <Button Grid.Row="1"  Command="{Binding CreateColumnCommand}" VerticalAlignment="Center" Margin="10 30 0 0" HorizontalAlignment="Left" Width="90" Height="30" Content="Create" FontSize="18" Foreground="White">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#00a09d"></Setter>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type Button}">
+                                        <Border Background="{TemplateBinding Background}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#008784"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Grid Margin="6" Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <!--    Add new column for tasks   -->
+                    <Grid Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="74*"/>
+                            <ColumnDefinition Width="593*"/>
+                        </Grid.ColumnDefinitions>
+                        <ListBox ItemsSource="{Binding Source={x:Static model:ColumnsOfProject.Instance},Path=Columns}" dd:DragDrop.IsDropTarget="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.DragHandler="{Binding}" dd:DragDrop.DropHandler="{Binding}" AllowDrop="True" SelectedItem="{Binding Source={x:Static model:CurrentColumn.Instance},Path=Column}"  ScrollViewer.HorizontalScrollBarVisibility="Auto" Grid.ColumnSpan="2">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel IsItemsHost="True" Orientation="Horizontal" FlowDirection="LeftToRight"/>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="VerticalAlignment" Value="Top"/>
+                                    <Setter Property="Margin" Value="10 5 20 0"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                <Border Background="{TemplateBinding Background}">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Effect" Value="{StaticResource MyEffect}" />
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <ContentControl Content="{Binding .}" >
+                                        <ContentControl.Style>
+                                            <Style TargetType="ContentControl">
+                                                <Setter Property="ContentTemplate"
+                                                            Value="{StaticResource CreateColumnTemplate}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=ColumnIsAdded}" Value="True">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource CreateTaskTemplate}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ContentControl.Style>
+                                    </ContentControl>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+
+
+                </Grid>
+            </Grid>
+
+        </Border>
+    </Grid>
+
+</UserControl>
